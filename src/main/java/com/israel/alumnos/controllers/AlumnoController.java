@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/alumnos")
@@ -28,6 +29,13 @@ public class AlumnoController {
     @GetMapping("/traer-alumnos")
     public List<Alumno> TraerAlumnos() {
         return alumnoRepository.findAll();
+    }
+
+    @GetMapping("/traer-alumno/{id}")
+    public ResponseEntity<Alumno> TraerUnAlumno(@PathVariable Long id) {
+        return alumnoRepository.findById(id)
+                .map(alumno -> ResponseEntity.ok(alumno))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // Metodo para insertar un alumno en la base de datos

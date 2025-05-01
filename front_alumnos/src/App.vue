@@ -12,13 +12,23 @@ const nuevoAlumno = ref({
   imagenURL: ''
 });
 
+const editado = ref(false);
+
 const cargarAlumnos = async () => {
+
   const response = await axios.get('http://localhost:8080/alumnos/traer-alumnos')
   alumnos.value = response.data;
   console.log(alumnos.value);
 }
 const agregarAlumno = async () => {
-  await axios.post('http://localhost:8080/alumnos/insertar-alumnos', nuevoAlumno.value);
+  if (editado.value) {
+    await axios.put(`http://localhost:8080/alumnos/editar-alumnos/${nuevoAlumno.value.id}`, nuevoAlumno.value);
+    // editado.value = false
+  } else {
+    await axios.post('http://localhost:8080/alumnos/insertar-alumnos', nuevoAlumno.value);
+
+  }
+
   await cargarAlumnos();
   nuevoAlumno.value = {
     nombre: '',
@@ -27,6 +37,11 @@ const agregarAlumno = async () => {
     telefono: '',
     imagenURL: ''
   };
+}
+// Función para editar un alumno
+const editarAlumnos = (alumno) => {
+  Object.assign(nuevoAlumno.value, alumno);
+  editado.value = true
 }
 
 const eliminarAlumno = async (id) => {
@@ -71,7 +86,9 @@ onMounted(cargarAlumnos);
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">Agregar Alumno</button>
+            <button type="submit" class="btn btn-primary">
+              {{ editado ? 'Actualizar Alumno' : 'Agregar Alumno' }}
+            </button>
           </form>
 
         </div>
@@ -79,36 +96,44 @@ onMounted(cargarAlumnos);
       </div>
 
       <div class="col-md-12">
-        <h2>Tabla de Alumnos</h2>
+        <div class="card shadow">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Lista de Alumnos</h5>
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Id</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Apellidos</th>
+                  <th scope="col">Carrera</th>
+                  <th scope="col">telefono</th>
+                  <th scope="col">imagen</th>
+                  <th scope="col">Acciones</th>
 
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">Id</th>
-              <th scope="col">Nombre</th>
-              <th scope="col">Apellidos</th>
-              <th scope="col">Carrera</th>
-              <th scope="col">telefono</th>
-              <th scope="col">imagen</th>
-              <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="alumno in alumnos" :key="alumno.id">
+                  <td>{{ alumno.id }}</td>
+                  <td>{{ alumno.nombre }}</td>
+                  <td>{{ alumno.apellido }}</td>
+                  <td>{{ alumno.carrera }}</td>
+                  <td>{{ alumno.telefono }}</td>
+                  <td><img :src="alumno.imagenURL" alt="Imagen de Alumno" width="50"></td>
+                  <td><button @click=eliminarAlumno(alumno.id) class="btn btn-danger mx-2"><i
+                        class="bi bi-trash3-fill"></i></button>
+                    <button @click="editarAlumnos(alumno)" class="btn btn-warning"><i
+                        class="bi bi-pencil-fill"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="alumno in alumnos" :key="alumno.id">
-              <td>{{ alumno.id }}</td>
-              <td>{{ alumno.nombre }}</td>
-              <td>{{ alumno.apellido }}</td>
-              <td>{{ alumno.carrera }}</td>
-              <td>{{ alumno.telefono }}</td>
-              <td><img :src="alumno.imagenURL" alt="Imagen de Alumno" width="50"></td>
-              <td><button @click=eliminarAlumno(alumno.id) class="btn btn-danger mx-2"><i
-                    class="bi bi-trash3-fill"></i></button>
-                <button class="btn btn-warning"><i class="bi bi-pencil-fill"></i></button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+
+
+
       </div>
 
     </div>
